@@ -1557,6 +1557,939 @@ showNotification(message, type = 'info') {
         }
     }, 5000);
 }
+// Add these methods to the AlumniManagementSystem class
+
+loadEventManagement() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="event-header">
+            <div>
+                <h2>Event Management</h2>
+                <p>Create and manage alumni events, track attendance, and engage your community</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="alumniSystem.createEvent()">
+                    <i class="fas fa-plus"></i> Create Event
+                </button>
+                <button class="btn-secondary" onclick="alumniSystem.exportEvents()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="event-stats">
+            <div class="event-stat-card upcoming">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Upcoming Events</div>
+            </div>
+            <div class="event-stat-card ongoing">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Ongoing Events</div>
+            </div>
+            <div class="event-stat-card completed">
+                <div class="stat-number">45</div>
+                <div class="stat-label">Completed Events</div>
+            </div>
+            <div class="event-stat-card">
+                <div class="stat-number">1,247</div>
+                <div class="stat-label">Total Attendees</div>
+            </div>
+        </div>
+
+        <div class="event-view-toggle">
+            <button class="view-toggle-btn active" onclick="alumniSystem.switchEventView('grid')" data-view="grid">
+                <i class="fas fa-th"></i> Grid View
+            </button>
+            <button class="view-toggle-btn" onclick="alumniSystem.switchEventView('list')" data-view="list">
+                <i class="fas fa-list"></i> List View
+            </button>
+            <button class="view-toggle-btn" onclick="alumniSystem.switchEventView('calendar')" data-view="calendar">
+                <i class="fas fa-calendar"></i> Calendar View
+            </button>
+        </div>
+
+        <div class="event-filters">
+            <div class="event-filter-row">
+                <div class="event-filter-group">
+                    <label>Event Type</label>
+                    <select id="event-type-filter">
+                        <option value="">All Types</option>
+                        <option value="reunion">Reunion</option>
+                        <option value="networking">Networking</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="social">Social</option>
+                        <option value="fundraising">Fundraising</option>
+                    </select>
+                </div>
+                <div class="event-filter-group">
+                    <label>Status</label>
+                    <select id="event-status-filter">
+                        <option value="">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                                <div class="event-filter-group">
+                    <label>Date Range</label>
+                    <input type="date" id="start-date-filter">
+                    <input type="date" id="end-date-filter">
+                </div>
+                <div class="event-filter-group">
+                    <button class="btn-primary" onclick="alumniSystem.applyEventFilters()">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="events-grid" id="events-grid">
+            ${this.generateEventCards()}
+        </div>
+
+        <div class="events-list" id="events-list" style="display: none;">
+            <div class="event-list-header">
+                <div>Event</div>
+                <div>Date</div>
+                <div>Type</div>
+                <div>Status</div>
+                <div>Attendees</div>
+                <div>Actions</div>
+            </div>
+            ${this.generateEventListRows()}
+        </div>
+
+        <div class="calendar-container" id="events-calendar" style="display: none;">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button onclick="alumniSystem.changeCalendarMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <div class="calendar-month" id="calendar-month">January 2024</div>
+                    <button onclick="alumniSystem.changeCalendarMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                ${this.generateCalendarDays()}
+            </div>
+        </div>
+    `;
+}
+
+generateEventCards() {
+    // Sample event data - this would come from API
+    const events = [
+        {
+            id: 1,
+            title: 'Alumni Reunion 2024',
+            date: '2024-05-15',
+            time: '6:00 PM - 9:00 PM',
+            type: 'reunion',
+            description: 'Join us for a night of nostalgia and reconnecting with old friends!',
+            status: 'upcoming',
+            attendees: 150
+        },
+        {
+            id: 2,
+            title: 'Networking Night',
+            date: '2024-04-20',
+            time: '5:00 PM - 8:00 PM',
+            type: 'networking',
+            description: 'Expand your professional network and meet fellow alumni.',
+            status: 'upcoming',
+            attendees: 80
+        },
+        {
+            id: 3,
+            title: 'Tech Seminar: Future of AI',
+            date: '2024-03-10',
+            time: '10:00 AM - 12:00 PM',
+            type: 'seminar',
+            description: 'Join industry experts as they discuss the future of AI technology.',
+            status: 'ongoing',
+            attendees: 50
+        },
+        {
+            id: 4,
+            title: 'Fundraising Gala',
+            date: '2024-02-25',
+            time: '7:00 PM - 11:00 PM',
+            type: 'fundraising',
+            description: 'Help us raise funds for scholarships and community projects.',
+            status: 'completed',
+            attendees: 200
+        }
+    ];
+
+    return events.map(event => `
+        <div class="event-card">
+            <div class="event-card-header ${event.type}">
+                <h3 class="event-title">${event.title}</h3>
+                <span class="event-type-badge">${event.type.charAt(0).toUpperCase() + event.type.slice(1)}</span>
+            </div>
+            <div class="event-card-body">
+                <div class="event-date-time">
+                    <i class="fas fa-calendar-alt"></i> ${this.formatDate(event.date)} at ${event.time}
+                </div>
+                <p class="event-description">${event.description}</p>
+                <div class="event-details">
+                    <div class="event-detail-item">
+                        <i class="fas fa-users"></i>
+                        <span>${event.attendees} Attendees</span>
+                    </div>
+                    <div class="event-detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span class="event-status ${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="event-card-footer">
+                <div class="event-actions">
+                    <button class="btn-event btn-event-primary" onclick="alumniSystem.viewEventDetails(${event.id})">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="btn-event btn-event-secondary" onclick="alumniSystem.editEvent(${event.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn-event btn-event-danger" onclick="alumniSystem.cancelEvent(${event.id})">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+generateEventListRows() {
+    // Sample event data - this would come from API
+    const events = [
+        {
+            id: 1,
+            title: 'Alumni Reunion 2024',
+            date: '2024-05-15',
+            type: 'reunion',
+            status: 'upcoming',
+            attendees: 150
+        },
+        {
+            id: 2,
+            title: 'Networking Night',
+            date: '2024-04-20',
+            type: 'networking',
+            status: 'upcoming',
+            attendees: 80
+        },
+        {
+            id: 3,
+            title: 'Tech Seminar: Future of AI',
+            date: '2024-03-10',
+            type: 'seminar',
+            status: 'ongoing',
+            attendees: 50
+        },
+        {
+            id: 4,
+            title: 'Fundraising Gala',
+            date: '2024-02-25',
+            type: 'fundraising',
+            status: 'completed',
+            attendees: 200
+        }
+    ];
+
+    return events.map(event => `
+        <div class="event-list-row">
+            <div class="event-info">
+                <h4>${event.title}</h4>
+                <p>${this.formatDate(event.date)}</p>
+            </div>
+            <div>${event.type.charAt(0).toUpperCase() + event.type.slice(1)}</div>
+            <div>
+                <span class="event-status ${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</span>
+            </div>
+            <div>${event.attendees}</div>
+            <div class="event-actions">
+                <button class="btn-event btn-event-primary" onclick="alumniSystem.viewEventDetails(${event.id})">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn-event btn-event-secondary" onclick="alumniSystem.editEvent(${event.id})">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-event btn-event-danger" onclick="alumniSystem.cancelEvent(${event.id})">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+generateCalendarDays() {
+    // Sample calendar data - this would come from API
+    const daysInMonth = 30; // Example for simplicity
+    const events = [
+        { date: '2024-05-15', title: 'Alumni Reunion 2024', type: 'reunion' },
+        { date: '2024-04-20', title: 'Networking Night', type: 'networking' },
+        { date: '2024-03-10', title: 'Tech Seminar: Future of AI', type: 'seminar' },
+        { date: '2024-02-25', title: 'Fundraising Gala', type: 'fundraising' }
+    ];
+
+    const calendarDays = [];
+    for (let i = 1; i <= daysInMonth; i++) {
+        const date = `2024-05-${i < 10 ? '0' + i : i}`;
+        const event = events.find(event => event.date === date);
+        calendarDays.push(`
+            <div class="calendar-day ${event ? '' : 'other-month'}" data-date="${date}">
+                <div class="calendar-day-number">${i}</div>
+                ${event ? `<div class="calendar-event ${event.type}">${event.title}</div>` : ''}
+            </div>
+        `);
+    }
+    return calendarDays.join('');
+}
+
+switchEventView(view) {
+    document.getElementById('events-grid').style.display = view === 'grid' ? 'grid' : 'none';
+    document.getElementById('events-list').style.display = view === 'list' ? 'block' : 'none';
+    document.getElementById('events-calendar').style.display = view === 'calendar' ? 'block' : 'none';
+
+    const buttons = document.querySelectorAll('.view-toggle-btn');
+    buttons.forEach(button => {
+        button.classList.remove('active');
+        if (button.getAttribute('data-view') === view) {
+            button.classList.add('active');
+        }
+    });
+}
+
+applyEventFilters() {
+    const eventType = document.getElementById('event-type-filter').value;
+    const eventStatus = document.getElementById('event-status-filter').value;
+    const startDate = document.getElementById('start-date-filter').value;
+    const endDate = document.getElementById('end-date-filter').value;
+
+    // Here you would apply the filters and reload the event list/grid
+    // For now, we'll just show a notification
+    this.showNotification('Filters applied successfully!', 'info');
+}
+
+createEvent() {
+    this.openModal('Create New Event', `
+        <form id="create-event-form">
+            <div class="event-form-section">
+                <h3>Event Details</h3>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" name="eventTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Event Date</label>
+                        <input type="date" id="eventDate" name="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime">Event Time</label>
+                        <input type="text" id="eventTime" name="eventTime" placeholder="e.g., 6:00 PM - 9:00 PM" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="eventType">Event Type</label>
+                    <select id="eventType" name="eventType" required>
+                        <option value="">Select Type</option>
+                        <option value="reunion">Reunion</option>
+                        <option value="networking">Networking</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="social">Social</option>
+                        <option value="fundraising">Fundraising</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" name="eventDescription" rows="4" required></textarea>
+                </div>
+            </div>
+            <div class="event-form-section">
+                <h3>Attendance Settings</h3>
+                <div class="form-group">
+                    <label for="maxAttendees">Max Attendees</label>
+                    <input type="number" id="maxAttendees" name="maxAttendees" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventStatus">Event Status</label>
+                    <select id="eventStatus" name="eventStatus" required>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Create Event</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('create-event-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitEventForm();
+    });
+}
+
+submitEventForm() {
+    const title = document.getElementById('eventTitle').value;
+    const date = document.getElementById('eventDate').value;
+    const time = document.getElementById('eventTime').value;
+    const type = document.getElementById('eventType').value;
+    const description = document.getElementById('eventDescription').value;
+    const maxAttendees = document.getElementById('maxAttendees').value;
+    const status = document.getElementById('eventStatus').value;
+
+    // Here you would make an API call to create the event
+    // For now, we'll just show a notification
+    this.showNotification('Event created successfully!', 'success');
+    this.closeModal();
+    this.loadEventManagement(); // Refresh the event list
+}
+
+viewEventDetails(eventId) {
+    // Sample data - this would come from API
+    const eventDetails = {
+        id: eventId,
+        title: 'Alumni Reunion 2024',
+        date: '2024-05-15',
+        time: '6:00 PM - 9:00 PM',
+        type: 'reunion',
+        description: 'Join us for a night of nostalgia and reconnecting with old friends!',
+        status: 'upcoming',
+        attendees: 150,
+        maxAttendees: 200,
+        location: 'University Auditorium',
+        contact: 'alumni@university.edu'
+    };
+
+    this.openModal('Event Details', `
+        <div class="event-details-modal">
+            <div class="event-modal-header">
+                <h3 class="event-modal-title">${eventDetails.title}</h3>
+                <div class="event-modal-meta">
+                    <span>${this.formatDate(eventDetails.date)} at ${eventDetails.time}</span>
+                    <span class="event-status ${eventDetails.status}">${eventDetails.status.charAt(0).toUpperCase() + eventDetails.status.slice(1)}</span>
+                </div>
+            </div>
+            <div class="event-modal-body">
+                <div class="event-main-info">
+                    <h4>Description</h4>
+                    <p>${eventDetails.description}</p>
+                    <h4>Location</h4>
+                    <p>${eventDetails.location}</p>
+                    <h4>Contact</h4>
+                    <p>${eventDetails.contact}</p>
+                </div>
+                <div class="event-sidebar">
+                    <h4>Attendance</h4>
+                    <div class="attendance-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(eventDetails.attendees / eventDetails.maxAttendees) * 100}%"></div>
+                        </div>
+                        <div class="progress-text">${eventDetails.attendees} / ${eventDetails.maxAttendees} Attendees</div>
+                    </div>
+                    <h4>Attendees</h4>
+                    <div class="attendee-list">
+                        ${this.generateAttendeeList(eventId)}
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    `);
+}
+
+generateAttendeeList(eventId) {
+    // Sample attendee data - this would come from API
+    const attendees = [
+        { name: 'John Smith', graduationYear: 2020 },
+        { name: 'Sarah Johnson', graduationYear: 2019 },
+        { name: 'Mike Davis', graduationYear: 2021 },
+        { name: 'Emily Wilson', graduationYear: 2018 }
+    ];
+
+    return attendees.map(attendee => `
+        <div class="attendee-item">
+            <div class="attendee-avatar">${attendee.name.charAt(0)}</div>
+            <div class="attendee-info">
+                <div class="attendee-name">${attendee.name}</div>
+                <div class="attendee-year">Class of ${attendee.graduationYear}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+editEvent(eventId) {
+    // Sample data - this would come from API
+    const eventDetails = {
+        id: eventId,
+        title: 'Alumni Reunion 2024',
+        date: '2024-05-15',
+        time: '6:00 PM - 9:00 PM',
+        type: 'reunion',
+        description: 'Join us for a night of nostalgia and reconnecting with old friends!',
+        status: 'upcoming',
+        maxAttendees: 200
+    };
+
+    this.openModal('Edit Event', `
+        <form id="edit-event-form">
+            <div class="event-form-section">
+                <h3>Event Details</h3>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label for="editEventTitle">Event Title</label>
+                        <input type="text" id="editEventTitle" name="editEventTitle" value="${eventDetails.title}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEventDate">Event Date</label>
+                        <input type="date" id="editEventDate" name="editEventDate" value="${eventDetails.date}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEventTime">Event Time</label>
+                        <input type="text" id="editEventTime" name="editEventTime" value="${eventDetails.time}" placeholder="e.g., 6:00 PM - 9:00 PM" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editEventType">Event Type</label>
+                    <select id="editEventType" name="editEventType" required>
+                        <option value="reunion" ${eventDetails.type === 'reunion' ? 'selected' : ''}>Reunion</option>
+                                                <option value="networking" ${eventDetails.type === 'networking' ? 'selected' : ''}>Networking</option>
+                        <option value="seminar" ${eventDetails.type === 'seminar' ? 'selected' : ''}>Seminar</option>
+                        <option value="workshop" ${eventDetails.type === 'workshop' ? 'selected' : ''}>Workshop</option>
+                        <option value="social" ${eventDetails.type === 'social' ? 'selected' : ''}>Social</option>
+                        <option value="fundraising" ${eventDetails.type === 'fundraising' ? 'selected' : ''}>Fundraising</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editEventDescription">Description</label>
+                    <textarea id="editEventDescription" name="editEventDescription" rows="4" required>${eventDetails.description}</textarea>
+                </div>
+            </div>
+            <div class="event-form-section">
+                <h3>Attendance Settings</h3>
+                <div class="form-group">
+                    <label for="editMaxAttendees">Max Attendees</label>
+                    <input type="number" id="editMaxAttendees" name="editMaxAttendees" value="${eventDetails.maxAttendees}" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEventStatus">Event Status</label>
+                    <select id="editEventStatus" name="editEventStatus" required>
+                        <option value="upcoming" ${eventDetails.status === 'upcoming' ? 'selected' : ''}>Upcoming</option>
+                        <option value="ongoing" ${eventDetails.status === 'ongoing' ? 'selected' : ''}>Ongoing</option>
+                        <option value="completed" ${eventDetails.status === 'completed' ? 'selected' : ''}>Completed</option>
+                        <option value="cancelled" ${eventDetails.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Update Event</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('edit-event-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.updateEvent(eventId);
+    });
+}
+
+updateEvent(eventId) {
+    const title = document.getElementById('editEventTitle').value;
+    const date = document.getElementById('editEventDate').value;
+    const time = document.getElementById('editEventTime').value;
+    const type = document.getElementById('editEventType').value;
+    const description = document.getElementById('editEventDescription').value;
+    const maxAttendees = document.getElementById('editMaxAttendees').value;
+    const status = document.getElementById('editEventStatus').value;
+
+    // Here you would make an API call to update the event
+    // For now, we'll just show a notification
+    this.showNotification('Event updated successfully!', 'success');
+    this.closeModal();
+    this.loadEventManagement(); // Refresh the event list
+}
+
+cancelEvent(eventId) {
+    if (confirm('Are you sure you want to cancel this event? This action cannot be undone.')) {
+        // Here you would make an API call to cancel the event
+        this.showNotification('Event cancelled successfully!', 'success');
+        this.loadEventManagement(); // Refresh the event list
+    }
+}
+
+registerForEvent(eventId) {
+    this.openModal('Event Registration', `
+        <div class="registration-form">
+            <div class="registration-summary">
+                <h4>Alumni Reunion 2024</h4>
+                <p><strong>Date:</strong> May 15, 2024</p>
+                <p><strong>Time:</strong> 6:00 PM - 9:00 PM</p>
+                <p><strong>Location:</strong> University Auditorium</p>
+                <p><strong>Available Spots:</strong> 50 remaining</p>
+            </div>
+            
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="attendeeName">Full Name</label>
+                    <input type="text" id="attendeeName" name="attendeeName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendeeEmail">Email Address</label>
+                    <input type="email" id="attendeeEmail" name="attendeeEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="graduationYear">Graduation Year</label>
+                    <select id="graduationYear" name="graduationYear" required>
+                        <option value="">Select Year</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                        <option value="2019">2019</option>
+                        <option value="2018">2018</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendeePhone">Phone Number</label>
+                    <input type="tel" id="attendeePhone" name="attendeePhone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dietaryRestrictions">Dietary Restrictions (Optional)</label>
+                    <textarea id="dietaryRestrictions" name="dietaryRestrictions" rows="2" 
+                              placeholder="Please specify any dietary restrictions or allergies..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guestCount">Number of Guests</label>
+                    <select id="guestCount" name="guestCount">
+                        <option value="0">Just me</option>
+                        <option value="1">+1 Guest</option>
+                        <option value="2">+2 Guests</option>
+                        <option value="3">+3 Guests</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="emailUpdates" name="emailUpdates" checked>
+                        Send me updates about this event
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="futureEvents" name="futureEvents">
+                        Notify me about future alumni events
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Register for Event</button>
+                </div>
+            </form>
+        </div>
+    `);
+
+    document.getElementById('registration-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitEventRegistration(eventId);
+    });
+}
+
+submitEventRegistration(eventId) {
+    const formData = {
+        name: document.getElementById('attendeeName').value,
+        email: document.getElementById('attendeeEmail').value,
+        graduationYear: document.getElementById('graduationYear').value,
+        phone: document.getElementById('attendeePhone').value,
+        dietaryRestrictions: document.getElementById('dietaryRestrictions').value,
+        guestCount: document.getElementById('guestCount').value,
+        emailUpdates: document.getElementById('emailUpdates').checked,
+        futureEvents: document.getElementById('futureEvents').checked
+    };
+
+    // Here you would make an API call to register for the event
+    this.showNotification('Registration successful! You will receive a confirmation email shortly.', 'success');
+    this.closeModal();
+}
+
+exportEvents() {
+    // Here you would generate and download an Excel/CSV file with event data
+    this.showNotification('Event data exported successfully!', 'success');
+}
+
+changeCalendarMonth(direction) {
+    // Here you would change the calendar month and reload the calendar
+    const monthElement = document.getElementById('calendar-month');
+    const currentMonth = monthElement.textContent;
+    
+    // Simple example - in real implementation, you'd handle date logic properly
+    if (direction === 1) {
+        monthElement.textContent = 'February 2024';
+    } else {
+        monthElement.textContent = 'December 2023';
+    }
+    
+    // Reload calendar days
+    document.getElementById('calendar-grid').innerHTML = this.generateCalendarDays();
+}
+
+// Event Management specific utility methods
+formatEventDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+getEventStatusColor(status) {
+    const colors = {
+        upcoming: '#3b82f6',
+        ongoing: '#10b981',
+        completed: '#6b7280',
+        cancelled: '#ef4444'
+    };
+    return colors[status] || '#6b7280';
+}
+
+// Alumni-specific event methods for alumni users
+loadAlumniEvents() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="event-header">
+            <div>
+                <h2>Alumni Events</h2>
+                <p>Discover and join upcoming alumni events</p>
+            </div>
+        </div>
+
+        <div class="event-filters">
+            <div class="event-filter-row">
+                <div class="event-filter-group">
+                    <label>Event Type</label>
+                    <select id="alumni-event-type-filter">
+                        <option value="">All Types</option>
+                        <option value="reunion">Reunion</option>
+                        <option value="networking">Networking</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="social">Social</option>
+                    </select>
+                </div>
+                <div class="event-filter-group">
+                    <label>Date Range</label>
+                    <select id="alumni-date-filter">
+                        <option value="">All Dates</option>
+                        <option value="this-week">This Week</option>
+                        <option value="this-month">This Month</option>
+                        <option value="next-month">Next Month</option>
+                    </select>
+                </div>
+                <div class="event-filter-group">
+                    <button class="btn-primary" onclick="alumniSystem.applyAlumniEventFilters()">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="events-grid">
+            ${this.generateAlumniEventCards()}
+        </div>
+    `;
+}
+
+generateAlumniEventCards() {
+    // Sample event data for alumni view
+    const events = [
+        {
+            id: 1,
+            title: 'Alumni Reunion 2024',
+            date: '2024-05-15',
+            time: '6:00 PM - 9:00 PM',
+            type: 'reunion',
+            description: 'Join us for a night of nostalgia and reconnecting with old friends!',
+            status: 'upcoming',
+            availableSpots: 50,
+            isRegistered: false
+        },
+        {
+            id: 2,
+            title: 'Networking Night',
+            date: '2024-04-20',
+            time: '5:00 PM - 8:00 PM',
+            type: 'networking',
+            description: 'Expand your professional network and meet fellow alumni.',
+            status: 'upcoming',
+            availableSpots: 30,
+            isRegistered: true
+        }
+    ];
+
+    return events.map(event => `
+        <div class="event-card">
+            <div class="event-card-header ${event.type}">
+                <h3 class="event-title">${event.title}</h3>
+                <span class="event-type-badge">${event.type.charAt(0).toUpperCase() + event.type.slice(1)}</span>
+            </div>
+            <div class="event-card-body">
+                <div class="event-date-time">
+                    <i class="fas fa-calendar-alt"></i> ${this.formatDate(event.date)} at ${event.time}
+                </div>
+                <p class="event-description">${event.description}</p>
+                <div class="event-details">
+                    <div class="event-detail-item">
+                        <i class="fas fa-users"></i>
+                        <span>${event.availableSpots} spots available</span>
+                    </div>
+                    <div class="event-detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span class="event-status ${event.status}">${event.status.charAt(0).toUpperCase() + event.status.slice(1)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="event-card-footer">
+                <div class="event-actions">
+                    <button class="btn-event btn-event-primary" onclick="alumniSystem.viewEventDetails(${event.id})">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    ${event.isRegistered ? 
+                        `<button class="btn-event btn-event-success" disabled>
+                            <i class="fas fa-check"></i> Registered
+                        </button>` :
+                        `<button class="btn-event btn-event-primary" onclick="alumniSystem.registerForEvent(${event.id})">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>`
+                    }
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+applyAlumniEventFilters() {
+    const eventType = document.getElementById('alumni-event-type-filter').value;
+    const dateRange = document.getElementById('alumni-date-filter').value;
+
+    // Here you would apply the filters and reload the event list
+    this.showNotification('Filters applied successfully!', 'info');
+}
+
+// Event attendance tracking methods
+markAttendance(eventId, attendeeId) {
+    // Here you would mark attendance for an event
+    this.showNotification('Attendance marked successfully!', 'success');
+}
+
+generateAttendanceReport(eventId) {
+    // Here you would generate an attendance report
+    this.showNotification('Attendance report generated!', 'success');
+}
+
+sendEventReminder(eventId) {
+    this.openModal('Send Event Reminder', `
+        <form id="event-reminder-form">
+            <div class="form-group">
+                <label for="reminderSubject">Email Subject</label>
+                <input type="text" id="reminderSubject" value="Reminder: Alumni Reunion 2024 - Tomorrow!" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reminderMessage">Message</label>
+                <textarea id="reminderMessage" rows="6" required>Dear Alumni,
+
+This is a friendly reminder about our upcoming Alumni Reunion 2024 event tomorrow!
+
+Event Details:
+- Date: May 15, 2024
+- Time: 6:00 PM - 9:00 PM
+- Location: University Auditorium
+
+We're looking forward to seeing you there!
+
+Best regards,
+Alumni Relations Team</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="reminderRecipients">Send To</label>
+                <select id="reminderRecipients" required>
+                                        <option value="all">All Registered Attendees</option>
+                    <option value="specific">Specific Alumni</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Send Reminder</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('event-reminder-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitEventReminder(eventId);
+    });
+}
+
+submitEventReminder(eventId) {
+    const subject = document.getElementById('reminderSubject').value;
+    const message = document.getElementById('reminderMessage').value;
+    const recipients = document.getElementById('reminderRecipients').value;
+
+    // Here you would make an API call to send the reminder
+    this.showNotification('Event reminder sent successfully!', 'success');
+    this.closeModal();
+}
+
+// Utility function to format date
+formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// Utility function to show notifications
+showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
 
 
     viewProfile(alumniId) {
