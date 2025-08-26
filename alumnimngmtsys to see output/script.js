@@ -5885,6 +5885,1398 @@ formatDate(dateString) {
         day: 'numeric'
     });
 }
+// Add these methods to the AlumniManagementSystem class
+
+loadReports() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="reports-header">
+            <div>
+                <h2>Reports & Analytics</h2>
+                <p>Comprehensive reporting and analytics across all modules</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn-primary" onclick="alumniSystem.scheduleReport()">
+                    <i class="fas fa-clock"></i> Schedule Report
+                </button>
+                <button class="btn-secondary" onclick="alumniSystem.customReport()">
+                    <i class="fas fa-chart-line"></i> Custom Report
+                </button>
+            </div>
+        </div>
+
+        <div class="reports-dashboard">
+            <div class="report-sidebar">
+                <div class="report-categories">
+                    <h3>Report Categories</h3>
+                    
+                    <div class="report-category">
+                        <div class="category-title">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            Donations & Campaigns
+                        </div>
+                        <ul class="report-list">
+                            <li class="report-item active" onclick="alumniSystem.loadReport('donation-summary')">
+                                <div class="report-item-info">
+                                    <span>Donation Summary</span>
+                                </div>
+                                <span class="report-item-badge">New</span>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('campaign-performance')">
+                                <div class="report-item-info">
+                                    <span>Campaign Performance</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('donor-analysis')">
+                                <div class="report-item-info">
+                                    <span>Donor Analysis</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('recurring-donations')">
+                                <div class="report-item-info">
+                                    <span>Recurring Donations</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="report-category">
+                        <div class="category-title">
+                            <i class="fas fa-users"></i>
+                            Alumni Management
+                        </div>
+                        <ul class="report-list">
+                            <li class="report-item" onclick="alumniSystem.loadReport('alumni-overview')">
+                                <div class="report-item-info">
+                                    <span>Alumni Overview</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('engagement-metrics')">
+                                <div class="report-item-info">
+                                    <span>Engagement Metrics</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('geographic-distribution')">
+                                <div class="report-item-info">
+                                    <span>Geographic Distribution</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="report-category">
+                        <div class="category-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Events
+                        </div>
+                        <ul class="report-list">
+                            <li class="report-item" onclick="alumniSystem.loadReport('event-attendance')">
+                                <div class="report-item-info">
+                                    <span>Event Attendance</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('event-feedback')">
+                                <div class="report-item-info">
+                                    <span>Event Feedback</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="report-category">
+                        <div class="category-title">
+                            <i class="fas fa-briefcase"></i>
+                            Job Placement
+                        </div>
+                        <ul class="report-list">
+                            <li class="report-item" onclick="alumniSystem.loadReport('job-placement-stats')">
+                                <div class="report-item-info">
+                                    <span>Placement Statistics</span>
+                                </div>
+                            </li>
+                            <li class="report-item" onclick="alumniSystem.loadReport('employer-partnerships')">
+                                <div class="report-item-info">
+                                    <span>Employer Partnerships</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="report-filters">
+                    <h4>Filters</h4>
+                    <div class="filter-group">
+                        <label for="reportDateRange">Date Range</label>
+                        <select id="reportDateRange">
+                            <option value="last-30-days">Last 30 Days</option>
+                            <option value="last-3-months">Last 3 Months</option>
+                            <option value="last-6-months">Last 6 Months</option>
+                            <option value="last-year">Last Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group" id="customDateRange" style="display: none;">
+                        <label>Custom Date Range</label>
+                        <div class="date-range">
+                            <input type="date" id="startDate" placeholder="Start Date">
+                            <input type="date" id="endDate" placeholder="End Date">
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="reportFormat">Export Format</label>
+                        <select id="reportFormat">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button class="btn-filter btn-filter-primary" onclick="alumniSystem.applyReportFilters()">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                        <button class="btn-filter btn-filter-secondary" onclick="alumniSystem.resetReportFilters()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-main">
+                <div class="report-content" id="reportContent">
+                    ${this.generateDonationSummaryReport()}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add event listener for date range selection
+    document.getElementById('reportDateRange').addEventListener('change', function() {
+        const customRange = document.getElementById('customDateRange');
+        customRange.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+}
+
+loadReport(reportType) {
+    // Remove active class from all report items
+    document.querySelectorAll('.report-item').forEach(item => item.classList.remove('active'));
+    
+    // Add active class to clicked item
+    event.target.closest('.report-item').classList.add('active');
+    
+    // Show loading state
+    document.getElementById('reportContent').innerHTML = `
+        <div class="report-loading">
+            <i class="fas fa-spinner"></i>
+            <p>Loading report...</p>
+        </div>
+    `;
+    
+    // Simulate loading delay
+    setTimeout(() => {
+        let reportContent = '';
+        
+        switch(reportType) {
+            case 'donation-summary':
+                reportContent = this.generateDonationSummaryReport();
+                break;
+            case 'campaign-performance':
+                reportContent = this.generateCampaignPerformanceReport();
+                break;
+            case 'donor-analysis':
+                reportContent = this.generateDonorAnalysisReport();
+                break;
+            case 'recurring-donations':
+                reportContent = this.generateRecurringDonationsReport();
+                break;
+            case 'alumni-overview':
+                reportContent = this.generateAlumniOverviewReport();
+                break;
+            case 'engagement-metrics':
+                reportContent = this.generateEngagementMetricsReport();
+                break;
+            case 'geographic-distribution':
+                reportContent = this.generateGeographicDistributionReport();
+                break;
+            case 'event-attendance':
+                reportContent = this.generateEventAttendanceReport();
+                break;
+            case 'event-feedback':
+                reportContent = this.generateEventFeedbackReport();
+                break;
+            case 'job-placement-stats':
+                reportContent = this.generateJobPlacementStatsReport();
+                break;
+            case 'employer-partnerships':
+                reportContent = this.generateEmployerPartnershipsReport();
+                break;
+            default:
+                reportContent = this.generateDonationSummaryReport();
+        }
+        
+        document.getElementById('reportContent').innerHTML = reportContent;
+    }, 1000);
+}
+
+generateDonationSummaryReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Donation Summary Report</h2>
+                <p class="report-subtitle">Overview of donation activities and trends</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('donation-summary')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Executive Summary</h4>
+            <p>This report provides a comprehensive overview of donation activities for the selected period. Total donations have increased by 23% compared to the previous period, with strong performance across all campaign categories.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">$245,680</div>
+                    <div class="highlight-label">Total Raised</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">1,247</div>
+                    <div class="highlight-label">Total Donors</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$197</div>
+                    <div class="highlight-label">Avg Donation</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">23%</div>
+                    <div class="highlight-label">Growth Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-stats">
+            <div class="report-stat-card positive">
+                <div class="stat-number">$45,230</div>
+                <div class="stat-label">This Month</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +23% from last month
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">156</div>
+                <div class="stat-label">New Donors</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +12% from last month
+                </div>
+            </div>
+            <div class="report-stat-card neutral">
+                <div class="stat-number">$290</div>
+                <div class="stat-label">Avg Donation</div>
+                <div class="stat-change neutral">
+                    <i class="fas fa-minus"></i> No change
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">89%</div>
+                <div class="stat-label">Retention Rate</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +5% from last month
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Monthly Donations</h3>
+                    <div class="chart-period">
+                        <button class="period-btn active">6M</button>
+                        <button class="period-btn">1Y</button>
+                        <button class="period-btn">All</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthlyDonationsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Donation Sources</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="donationSourcesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3 class="chart-title">Campaign Performance</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="campaignPerformanceChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-table">
+            <div class="report-table-header donation-table-header">
+                <div>Campaign</div>
+                <div>Goal</div>
+                <div>Raised</div>
+                <div>Progress</div>
+                <div>Donors</div>
+            </div>
+            ${this.generateDonationTableRows()}
+        </div>
+
+        <div class="export-options">
+            <h4>Export Options</h4>
+            <div class="export-buttons">
+                <button class="btn-export btn-export-pdf" onclick="alumniSystem.exportReportAs('pdf')">
+                    <i class="fas fa-file-pdf"></i> Export as PDF
+                </button>
+                <button class="btn-export btn-export-excel" onclick="alumniSystem.exportReportAs('excel')">
+                    <i class="fas fa-file-excel"></i> Export as Excel
+                </button>
+                <button class="btn-export btn-export-csv" onclick="alumniSystem.exportReportAs('csv')">
+                    <i class="fas fa-file-csv"></i> Export as CSV
+                </button>
+                <button class="btn-export btn-export-email" onclick="alumniSystem.emailReport()">
+                    <i class="fas fa-envelope"></i> Email Report
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+generateDonationTableRows() {
+    const campaigns = [
+        { name: 'Student Scholarship Fund 2024', goal: 100000, raised: 75500, donors: 234 },
+        { name: 'New Library Construction', goal: 500000, raised: 320000, donors: 156 },
+        { name: 'Research Innovation Grant', goal: 250000, raised: 180000, donors: 89 },
+        { name: 'Emergency Student Relief', goal: 50000, raised: 52000, donors: 312 }
+    ];
+
+    return campaigns.map(campaign => {
+        const progress = (campaign.raised / campaign.goal) * 100;
+        return `
+            <div class="report-table-row donation-table-row">
+                <div>
+                    <strong>${campaign.name}</strong>
+                    <div class="status-indicator ${progress >= 100 ? 'active' : progress >= 50 ? 'pending' : 'inactive'}"></div>
+                </div>
+                <div>$${campaign.goal.toLocaleString()}</div>
+                <div>$${campaign.raised.toLocaleString()}</div>
+                <div>
+                    <div class="progress-bar-report">
+                        <div class="progress-fill-report" style="width: ${Math.min(progress, 100)}%"></div>
+                    </div>
+                    ${progress.toFixed(1)}%
+                </div>
+                <div>${campaign.donors}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+generateCampaignPerformanceReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Campaign Performance Report</h2>
+                <p class="report-subtitle">Detailed analysis of campaign effectiveness and ROI</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('campaign-performance')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Campaign Performance Overview</h4>
+            <p>Analysis of all active and completed campaigns, showing performance metrics, donor engagement, and success rates across different campaign types.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">12</div>
+                    <div class="highlight-label">Active Campaigns</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">8</div>
+                    <div class="highlight-label">Completed</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">85%</div>
+                    <div class="highlight-label">Success Rate</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$1.2M</div>
+                    <div class="highlight-label">Total Raised</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Campaign Types Performance</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="campaignTypesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Success Rate by Type</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="successRateChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-table">
+            <div class="report-table-header campaign-table-header">
+                <div>Campaign</div>
+                <div>Type</div>
+                <div>Status</div>
+                <div>Progress</div>
+                <div>ROI</div>
+            </div>
+            ${this.generateCampaignTableRows()}
+        </div>
+    `;
+}
+
+generateCampaignTableRows() {
+    const campaigns = [
+        { name: 'Student Scholarship Fund 2024', type: 'Scholarship', status: 'Active', progress: 75.5, roi: 4.2 },
+        { name: 'New Library Construction', type: 'Infrastructure', status: 'Active', progress: 64.0, roi: 3.8 },
+        { name: 'Research Innovation Grant', type: 'Research', status: 'Active', progress: 72.0, roi: 5.1 },
+        { name: 'Emergency Student Relief', type: 'Emergency', status: 'Completed', progress: 104.0, roi: 6.3 }
+    ];
+
+    return campaigns.map(campaign => `
+        <div class="report-table-row campaign-table-row">
+            <div>
+                <strong>${campaign.name}</strong>
+            </div>
+            <div>${campaign.type}</div>
+            <div>
+                <span class="status-indicator ${campaign.status.toLowerCase() === 'active' ? 'active' : 'inactive'}"></span>
+                ${campaign.status}
+            </div>
+            <div>
+                <div class="progress-bar-report">
+                    <div class="progress-fill-report" style="width: ${Math.min(campaign.progress, 100)}%"></div>
+                </div>
+                ${campaign.progress}%
+            </div>
+            <div>
+                <span class="comparison-indicator up">
+                    <span class="comparison-arrow">↑</span>
+                    ${campaign.roi}x
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+generateDonorAnalysisReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Donor Analysis Report</h2>
+                <p class="report-subtitle">Comprehensive analysis of donor behavior and demographics</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('donor-analysis')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Donor Demographics & Behavior</h4>
+            <p>Analysis of donor patterns, retention rates, and giving behavior across different segments and demographics.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">1,247</div>
+                    <div class="highlight-label">Total Donors</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">89%</div>
+                    <div class="highlight-label">Alumni Donors</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">76%</div>
+                    <div class="highlight-label">Retention Rate</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$197</div>
+                    <div class="highlight-label">Avg Gift Size</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Donor Demographics</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="donorDemographicsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Giving Frequency</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="givingFrequencyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3 class="chart-title">Donor Retention Trends</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="donorRetentionChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+generateAlumniOverviewReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Alumni Overview Report</h2>
+                <p class="report-subtitle">Comprehensive overview of alumni database and engagement</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('alumni-overview')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Alumni Database Overview</h4>
+            <p>Current status of alumni database including registration rates, profile completeness, and engagement metrics.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">15,247</div>
+                    <div class="highlight-label">Total Alumni</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">8,934</div>
+                    <div class="highlight-label">Registered</div>
+                </div>
+                                <div class="highlight-item">
+                    <div class="highlight-number">73%</div>
+                    <div class="highlight-label">Profile Complete</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">45%</div>
+                    <div class="highlight-label">Active Users</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-stats">
+            <div class="report-stat-card positive">
+                <div class="stat-number">2,156</div>
+                <div class="stat-label">New Registrations</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +18% this year
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">6,789</div>
+                <div class="stat-label">Active Alumni</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +12% this year
+                </div>
+            </div>
+            <div class="report-stat-card neutral">
+                <div class="stat-number">67%</div>
+                <div class="stat-label">Email Open Rate</div>
+                <div class="stat-change neutral">
+                    <i class="fas fa-minus"></i> No change
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">34%</div>
+                <div class="stat-label">Event Attendance</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +8% this year
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Alumni by Graduation Year</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="graduationYearChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Geographic Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="geographicChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+generateEventAttendanceReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Event Attendance Report</h2>
+                <p class="report-subtitle">Analysis of event participation and engagement trends</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('event-attendance')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Event Performance Summary</h4>
+            <p>Overview of event attendance rates, popular event types, and engagement metrics across all alumni events.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">47</div>
+                    <div class="highlight-label">Total Events</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">3,456</div>
+                    <div class="highlight-label">Total Attendees</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">73</div>
+                    <div class="highlight-label">Avg per Event</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">89%</div>
+                    <div class="highlight-label">Satisfaction Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Event Types Popularity</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="eventTypesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Monthly Attendance</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthlyAttendanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+generateJobPlacementStatsReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Job Placement Statistics</h2>
+                <p class="report-subtitle">Analysis of job placement success and career outcomes</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('job-placement-stats')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Job Placement Overview</h4>
+            <p>Comprehensive analysis of job placement rates, salary trends, and industry distribution for alumni career services.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">89%</div>
+                    <div class="highlight-label">Placement Rate</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">156</div>
+                    <div class="highlight-label">Jobs Posted</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">234</div>
+                    <div class="highlight-label">Applications</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$75K</div>
+                    <div class="highlight-label">Avg Salary</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Industry Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="industryChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Salary Trends</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="salaryTrendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Additional report generation methods
+generateRecurringDonationsReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Recurring Donations Report</h2>
+                <p class="report-subtitle">Analysis of subscription-based giving and retention</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('recurring-donations')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Recurring Giving Overview</h4>
+            <p>Analysis of recurring donation patterns, subscriber retention, and projected annual revenue from subscription-based giving.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">234</div>
+                    <div class="highlight-label">Active Subscriptions</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$12,450</div>
+                    <div class="highlight-label">Monthly Revenue</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">$149,400</div>
+                    <div class="highlight-label">Annual Projected</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">92%</div>
+                    <div class="highlight-label">Retention Rate</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+generateEngagementMetricsReport() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Engagement Metrics Report</h2>
+                <p class="report-subtitle">Alumni engagement across all touchpoints and channels</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('engagement-metrics')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Engagement Overview</h4>
+            <p>Comprehensive analysis of alumni engagement across events, donations, job board, and digital platforms.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">67%</div>
+                    <div class="highlight-label">Email Open Rate</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">34%</div>
+                    <div class="highlight-label">Event Participation</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">23%</div>
+                    <div class="highlight-label">Donation Rate</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">45%</div>
+                    <div class="highlight-label">Platform Usage</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Report utility methods
+applyReportFilters() {
+    const dateRange = document.getElementById('reportDateRange').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    // Here you would apply filters and regenerate the current report
+    this.showNotification('Report filters applied successfully!', 'info');
+    
+    // Reload current report with new filters
+    const activeReport = document.querySelector('.report-item.active');
+    if (activeReport) {
+        const reportType = activeReport.onclick.toString().match(/'([^']+)'/)[1];
+        this.loadReport(reportType);
+    }
+}
+
+resetReportFilters() {
+    document.getElementById('reportDateRange').value = 'last-30-days';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('customDateRange').style.display = 'none';
+    
+    this.showNotification('Report filters reset!', 'info');
+}
+
+exportReport(reportType) {
+    const format = document.getElementById('reportFormat').value;
+    this.exportReportAs(format, reportType);
+}
+
+exportReportAs(format, reportType = 'current') {
+    // Here you would generate and download the report in the specified format
+    const formatNames = {
+        'pdf': 'PDF',
+        'excel': 'Excel',
+        'csv': 'CSV'
+    };
+    
+    this.showNotification(`Exporting report as ${formatNames[format]}...`, 'info');
+    
+    // Simulate export process
+    setTimeout(() => {
+        this.showNotification(`Report exported successfully as ${formatNames[format]}!`, 'success');
+    }, 2000);
+}
+
+printReport() {
+    // Trigger browser print dialog
+    window.print();
+}
+
+emailReport() {
+    this.openModal('Email Report', `
+        <form id="email-report-form">
+            <div class="form-group">
+                <label for="emailRecipients">Recipients</label>
+                <input type="email" id="emailRecipients" placeholder="Enter email addresses (comma separated)" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="emailSubject">Subject</label>
+                <input type="text" id="emailSubject" value="Alumni Management System - Report" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="emailMessage">Message</label>
+                <textarea id="emailMessage" rows="4" placeholder="Optional message to include with the report..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="emailFormat">Report Format</label>
+                <select id="emailFormat">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Send Report</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('email-report-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.sendReportEmail();
+    });
+}
+
+sendReportEmail() {
+    const recipients = document.getElementById('emailRecipients').value;
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    const format = document.getElementById('emailFormat').value;
+
+    // Here you would send the email with the report attachment
+    this.showNotification('Report emailed successfully!', 'success');
+    this.closeModal();
+}
+
+scheduleReport() {
+    this.openModal('Schedule Report', `
+        <form id="schedule-report-form">
+            <div class="form-group">
+                <label for="scheduleReportType">Report Type</label>
+                <select id="scheduleReportType" required>
+                    <option value="">Select Report Type</option>
+                    <option value="donation-summary">Donation Summary</option>
+                    <option value="campaign-performance">Campaign Performance</option>
+                    <option value="donor-analysis">Donor Analysis</option>
+                    <option value="alumni-overview">Alumni Overview</option>
+                    <option value="engagement-metrics">Engagement Metrics</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="scheduleFrequency">Frequency</label>
+                <select id="scheduleFrequency" required>
+                                        <option value="">Select Frequency</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="annually">Annually</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="scheduleRecipients">Recipients</label>
+                <input type="email" id="scheduleRecipients" placeholder="Enter email addresses (comma separated)" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="scheduleFormat">Report Format</label>
+                <select id="scheduleFormat" required>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="scheduleStartDate">Start Date</label>
+                <input type="date" id="scheduleStartDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="scheduleActive" checked>
+                    Active (report will be sent automatically)
+                </label>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Schedule Report</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('schedule-report-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitScheduledReport();
+    });
+}
+
+submitScheduledReport() {
+    const reportType = document.getElementById('scheduleReportType').value;
+    const frequency = document.getElementById('scheduleFrequency').value;
+    const recipients = document.getElementById('scheduleRecipients').value;
+    const format = document.getElementById('scheduleFormat').value;
+    const startDate = document.getElementById('scheduleStartDate').value;
+    const active = document.getElementById('scheduleActive').checked;
+
+    // Here you would save the scheduled report configuration
+    this.showNotification('Report scheduled successfully!', 'success');
+    this.closeModal();
+}
+
+customReport() {
+    this.openModal('Create Custom Report', `
+        <form id="custom-report-form">
+            <div class="form-group">
+                <label for="customReportName">Report Name</label>
+                <input type="text" id="customReportName" placeholder="Enter report name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customReportDescription">Description</label>
+                <textarea id="customReportDescription" rows="3" placeholder="Describe what this report will show..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Data Sources</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeAlumni" checked>
+                        <label for="includeAlumni">Alumni Data</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeDonations" checked>
+                        <label for="includeDonations">Donations</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeEvents">
+                        <label for="includeEvents">Events</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeJobs">
+                        <label for="includeJobs">Job Placements</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeCampaigns">
+                        <label for="includeCampaigns">Campaigns</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Metrics to Include</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="metricTotals" checked>
+                        <label for="metricTotals">Totals & Counts</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="metricAverages" checked>
+                        <label for="metricAverages">Averages</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="metricTrends">
+                        <label for="metricTrends">Trends & Growth</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="metricComparisons">
+                        <label for="metricComparisons">Period Comparisons</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="customDateRange">Default Date Range</label>
+                <select id="customDateRange">
+                    <option value="last-30-days">Last 30 Days</option>
+                    <option value="last-3-months">Last 3 Months</option>
+                    <option value="last-6-months">Last 6 Months</option>
+                    <option value="last-year">Last Year</option>
+                    <option value="all-time">All Time</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" onclick="alumniSystem.closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Create Custom Report</button>
+            </div>
+        </form>
+    `);
+
+    document.getElementById('custom-report-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitCustomReport();
+    });
+}
+
+submitCustomReport() {
+    const reportName = document.getElementById('customReportName').value;
+    const description = document.getElementById('customReportDescription').value;
+    
+    const dataSources = {
+        alumni: document.getElementById('includeAlumni').checked,
+        donations: document.getElementById('includeDonations').checked,
+        events: document.getElementById('includeEvents').checked,
+        jobs: document.getElementById('includeJobs').checked,
+        campaigns: document.getElementById('includeCampaigns').checked
+    };
+    
+    const metrics = {
+        totals: document.getElementById('metricTotals').checked,
+        averages: document.getElementById('metricAverages').checked,
+        trends: document.getElementById('metricTrends').checked,
+        comparisons: document.getElementById('metricComparisons').checked
+    };
+    
+    const dateRange = document.getElementById('customDateRange').value;
+
+    // Here you would save the custom report configuration and generate it
+    this.showNotification('Custom report created successfully!', 'success');
+    this.closeModal();
+    
+    // Add the new custom report to the sidebar
+    this.addCustomReportToSidebar(reportName);
+}
+
+addCustomReportToSidebar(reportName) {
+    // Find the first report category and add the custom report
+    const firstCategory = document.querySelector('.report-category .report-list');
+    if (firstCategory) {
+        const customReportItem = document.createElement('li');
+        customReportItem.className = 'report-item';
+        customReportItem.onclick = () => this.loadCustomReport(reportName);
+        customReportItem.innerHTML = `
+            <div class="report-item-info">
+                <span>${reportName}</span>
+            </div>
+            <span class="report-item-badge">Custom</span>
+        `;
+        firstCategory.appendChild(customReportItem);
+    }
+}
+
+loadCustomReport(reportName) {
+    // Remove active class from all report items
+    document.querySelectorAll('.report-item').forEach(item => item.classList.remove('active'));
+    
+    // Add active class to clicked item
+    event.target.closest('.report-item').classList.add('active');
+    
+    // Generate custom report content
+    document.getElementById('reportContent').innerHTML = `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">${reportName}</h2>
+                <p class="report-subtitle">Custom report generated based on your specifications</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.editCustomReport('${reportName}')">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-report btn-report-secondary" onclick="alumniSystem.printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-report btn-report-primary" onclick="alumniSystem.exportReport('custom')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Custom Report Results</h4>
+            <p>This custom report combines data from multiple sources based on your selected criteria and metrics.</p>
+            
+            <div class="summary-highlights">
+                <div class="highlight-item">
+                    <div class="highlight-number">1,247</div>
+                    <div class="highlight-label">Total Records</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">5</div>
+                    <div class="highlight-label">Data Sources</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">12</div>
+                    <div class="highlight-label">Metrics</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">100%</div>
+                    <div class="highlight-label">Data Quality</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3 class="chart-title">Custom Data Visualization</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="customChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+editCustomReport(reportName) {
+    // Open the custom report form with existing data pre-filled
+    this.customReport();
+    // Pre-fill form with existing report data
+    document.getElementById('customReportName').value = reportName;
+}
+
+// Dashboard overview method
+generateReportsDashboard() {
+    return `
+        <div class="report-header">
+            <div>
+                <h2 class="report-title">Reports Dashboard</h2>
+                <p class="report-subtitle">Overview of all available reports and recent activity</p>
+            </div>
+        </div>
+
+        <div class="report-stats">
+            <div class="report-stat-card positive">
+                <div class="stat-number">24</div>
+                <div class="stat-label">Available Reports</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +3 new this month
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">156</div>
+                <div class="stat-label">Reports Generated</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +23% this month
+                </div>
+            </div>
+            <div class="report-stat-card neutral">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Scheduled Reports</div>
+                <div class="stat-change neutral">
+                    <i class="fas fa-minus"></i> No change
+                </div>
+            </div>
+            <div class="report-stat-card positive">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Custom Reports</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> +2 this month
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Most Popular Reports</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="popularReportsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Report Generation Trends</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="reportTrendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <h4>Quick Actions</h4>
+            <div class="summary-highlights">
+                <div class="highlight-item" onclick="alumniSystem.loadReport('donation-summary')" style="cursor: pointer;">
+                    <div class="highlight-number"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="highlight-label">Donation Report</div>
+                </div>
+                <div class="highlight-item" onclick="alumniSystem.loadReport('alumni-overview')" style="cursor: pointer;">
+                    <div class="highlight-number"><i class="fas fa-users"></i></div>
+                    <div class="highlight-label">Alumni Report</div>
+                </div>
+                <div class="highlight-item" onclick="alumniSystem.customReport()" style="cursor: pointer;">
+                    <div class="highlight-number"><i class="fas fa-plus"></i></div>
+                    <div class="highlight-label">Custom Report</div>
+                </div>
+                <div class="highlight-item" onclick="alumniSystem.scheduleReport()" style="cursor: pointer;">
+                    <div class="highlight-number"><i class="fas fa-clock"></i></div>
+                    <div class="highlight-label">Schedule Report</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Initialize charts (placeholder for chart library integration)
+initializeCharts() {
+    // This would integrate with Chart.js or similar library
+    // For now, we'll show placeholder text in chart containers
+    const chartContainers = document.querySelectorAll('.chart-container canvas');
+    chartContainers.forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Chart will be rendered here', canvas.width/2, canvas.height/2);
+    });
+}
+
+// Utility method to show notifications (if not already defined)
+showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()">×</button>
+    `;
+    
+        document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
 
 
 
