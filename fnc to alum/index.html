@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="loginScreen" class="login-container active">
+        <div class="login-box">
+            <h2>Login to AMS</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <p class="login-hint">Try: admin/admin123, finance_manager/finance123, accountant/account123</p>
+        </div>
+    </div>
+
+    <div id="mainApp" class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-university"></i>
+                <span>FMS</span>
+            </div>
+            <nav class="main-menu">
+                <ul>
+                    <li><a href="#" class="menu-item active" data-module="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#" class="menu-item" data-module="budget"><i class="fas fa-chart-pie"></i> Budget</a></li>
+                    <li><a href="#" class="menu-item" data-module="revenue"><i class="fas fa-dollar-sign"></i> Revenue</a></li>
+                    <li><a href="#" class="menu-item" data-module="expenses"><i class="fas fa-credit-card"></i> Expenses</a></li>
+                    <li><a href="#" class="menu-item" data-module="payables"><i class="fas fa-file-invoice"></i> Payables</a></li>
+                    <li><a href="#" class="menu-item" data-module="receivables"><i class="fas fa-receipt"></i> Receivables</a></li>
+                    <li><a href="#" class="menu-item" data-module="funds"><i class="fas fa-piggy-bank"></i> Funds</a></li>
+                    <li><a href="#" class="menu-item" data-module="requests"><i class="fas fa-paper-plane"></i> Requests</a></li>
+                    <li><a href="#" class="menu-item" data-module="reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                    <span id="currentUsername" class="user-name"></span>
+                    <span id="currentRole" class="user-role"></span>
+                </div>
+                <button id="logoutBtn" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <header class="main-header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="header-right">
+                    <div id="lastRefresh" class="refresh-indicator"></div>
+                    <button class="btn btn-icon" onclick="dashboardManager.refreshDashboard()" title="Refresh Dashboard"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </header>
+
+            <div class="module active" id="dashboard-module">
+                <div class="dashboard-grid">
+                    <div class="metric-card primary">
+                        <div class="card-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="card-content">
+                            <h3>Total Revenue</h3>
+                            <div class="metric-value" id="totalRevenue">₱0.00</div>
+                            <div class="metric-change positive">+12.5%</div>
+                        </div>
+                    </div>
+                    <div class="metric-card warning">
+                        <div class="card-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <div class="card-content">
+                            <h3>Total Expenses</h3>
+                            <div class="metric-value" id="totalExpenses">₱0.00</div>
+                            <div class="metric-change negative">-3.1%</div>
+                        </div>
+                    </div>
+                    <div class="metric-card net-income-card">
+                        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="card-content">
+                            <h3>Net Income</h3>
+                            <div class="metric-value" id="netIncome">₱0.00</div>
+                            <div class="metric-change positive" id="netIncomeCard"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="card-icon"><i class="fas fa-tasks"></i></div>
+                        <div class="card-content">
+                            <h3>Pending Requests</h3>
+                            <div class="metric-value" id="pendingRequests">0</div>
+                            <div class="metric-change">Awaiting approval</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="section-card chart-card">
+                        <div class="card-header">
+                            <h3>Revenue & Expense Trends</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn active">Monthly</button>
+                                <button class="chart-btn">Quarterly</button>
+                                <button class="chart-btn">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="card-header">
+                            <h3>Recent Transactions</h3>
+                            <button class="btn btn-sm btn-secondary">View All</button>
+                        </div>
+                        <div id="recentTransactions" class="space-y-4">
+                            <!-- Recent transactions will be loaded here by JS -->
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="card-header">
+                            <h3>Alerts & Notifications</h3>
+                            <button class="btn btn-sm btn-secondary">Manage Alerts</button>
+                        </div>
+                        <div id="alertsList" class="space-y-4">
+                            <!-- Alerts will be loaded here by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module" id="budget-module">
+                <div class="module-header">
+                    <div class="module-tabs">
+                        <button class="budget-tab active" data-view="overview" onclick="budgetManager.switchView('overview')">Overview</button>
+                        <button class="budget-tab" data-view="requests" onclick="budgetManager.switchView('requests')">Requests</button>
+                        <button class="budget-tab" data-view="allocations" onclick="budgetManager.switchView('allocations')">Allocations</button>
+                        <button class="budget-tab" data-view="forecasting" onclick="budgetManager.switchView('forecasting')">Forecasting</button>
+                        <button class="budget-tab" data-view="tracking" onclick="budgetManager.switchView('tracking')">Tracking</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="openBudgetModal()"><i class="fas fa-plus"></i> Create Budget</button>
+                </div>
+                <div class="module-content" id="budgetContent">
+                    <!-- Budget content will be loaded here by JS -->
+                </div>
+            </div>
+
+            <div class="module" id="revenue-module">
+                <div class="module-header">
+                    <h2>Revenue Management</h2>
+                    <button class="btn btn-primary" onclick="openRevenueModal()"><i class="fas fa-plus"></i> Add Revenue</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="revenueTable">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Source</th>
+                                <th>Student ID</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Revenue data will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="expenses-module">
+                <div class="module-header">
+                    <h2>Expense Management</h2>
+                    <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fas fa-plus"></i> Add Expense</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="expenseTable">
+                        <thead>
+                            <tr>
+                                <th>Details</th>
+                                <th>Category</th>
+                                <th>Vendor</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Expense data will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="payables-module">
+                <div class="module-header">
+                    <h2>Accounts Payable</h2>
+                    <button class="btn btn-primary" onclick="openPayableModal()"><i class="fas fa-plus"></i> Add Invoice</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="payableTable">
+                        <thead>
+                            <tr>
+                                <th>Invoice Details</th>
+                                <th>Vendor</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Payables data will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="receivables-module">
+                <div class="module-header">
+                    <h2>Accounts Receivable</h2>
+                    <button class="btn btn-primary" onclick="openReceivableModal()"><i class="fas fa-plus"></i> Create Invoice</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="receivableTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Invoice Details</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Receivables data will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="funds-module">
+                <div class="module-header">
+                    <h2>Fund Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-success" onclick="openFundModal('deposit')"><i class="fas fa-plus-circle"></i> Deposit</button>
+                        <button class="btn btn-danger" onclick="openFundModal('withdrawal')"><i class="fas fa-minus-circle"></i> Withdraw</button>
+                        <button class="btn btn-info" onclick="openFundModal('transfer')"><i class="fas fa-exchange-alt"></i> Transfer</button>
+                    </div>
+                </div>
+                <div class="funds-grid" id="fundsGrid">
+                    <!-- Funds data will be loaded here by JS -->
+                </div>
+                <h3 class="section-title">Recent Fund Transactions</h3>
+                <div class="table-container">
+                    <table class="data-table" id="fundTransactionTable">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Fund</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Recorded By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Fund transactions will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="requests-module">
+                <div class="module-header">
+                    <h2>Financial Requests</h2>
+                    <button class="btn btn-primary" onclick="openRequestModal()"><i class="fas fa-plus"></i> New Request</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="requestTable">
+                        <thead>
+                            <tr>
+                                <th>Request Type</th>
+                                <th>Requestor</th>
+                                <th>Amount</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Requests data will be loaded here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="module" id="reports-module">
+                <div class="module-header">
+                    <h2>Reports & Analytics</h2>
+                    <div class="report-controls">
+                        <div class="form-group">
+                            <label for="reportType">Report Type</label>
+                            <select id="reportType">
+                                <option value="income_statement">Income Statement</option>
+                                <option value="balance_sheet">Balance Sheet</option>
+                                <option value="cash_flow">Cash Flow Statement</option>
+                                <option value="budget_variance">Budget Variance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" value="2024-01-01">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" value="2024-12-31">
+                        </div>
+                        <button class="btn btn-primary" onclick="generateReport()"><i class="fas fa-play"></i> Generate Report</button>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="exportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="exportDropdown">
+                                <a class="dropdown-item" href="#" onclick="exportReport('pdf')">PDF</a>
+                                <a class="dropdown-item" href="#" onclick="exportReport('csv')">CSV</a>
+                                <a class="dropdown-item" href="#" onclick="exportReport('excel')">Excel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-content report-content" id="reportContent">
+                    <!-- Report content will be loaded here by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="modalContent" class="modal-content">
+            <!-- Modal content will be loaded here by JS -->
+        </div>
+    </div>
+
+    <div id="realTimeNotifications" class="notification-container"></div>
+
+    <!-- Core Application Scripts -->
+    <script src="MultipleFiles/database.js"></script>
+    <script src="MultipleFiles/auth.js"></script>
+    <script src="MultipleFiles/modals.js"></script>
+    <script src="MultipleFiles/workflow.js"></script>
+    <script src="MultipleFiles/dashboard.js"></script>
+    <script src="MultipleFiles/budget.js"></script>
+    <script src="MultipleFiles/revenue.js"></script>
+    <script src="MultipleFiles/expenses.js"></script>
+    <script src="MultipleFiles/payables.js"></script>
+    <script src="MultipleFiles/receivables.js"></script>
+    <script src="MultipleFiles/funds.js"></script>
+    <script src="MultipleFiles/requests.js"></script>
+    <script src="MultipleFiles/reports.js"></script>
+    <script src="MultipleFiles/main.js"></script>
+</body>
+</html>
