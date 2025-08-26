@@ -7351,6 +7351,63 @@ initializeCharts() {
 
     // Add more charts as needed...
 }
+// Call this after loading reports content
+initializeReportsFeature() {
+    // Initialize charts after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        this.initializeCharts();
+    }, 100);
+    
+    // Set up any additional event listeners
+    this.setupReportEventListeners();
+}
+
+setupReportEventListeners() {
+    // Period button handlers for charts
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from siblings
+            this.parentElement.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Here you would update the chart data based on the selected period
+            alumniSystem.showNotification(`Chart updated for ${this.textContent} period`, 'info');
+        });
+    });
+    
+    // Export button handlers
+    document.querySelectorAll('.btn-export').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const format = this.classList.contains('btn-export-pdf') ? 'pdf' :
+                          this.classList.contains('btn-export-excel') ? 'excel' :
+                          this.classList.contains('btn-export-csv') ? 'csv' : 'email';
+            
+            if (format === 'email') {
+                alumniSystem.emailReport();
+            } else {
+                alumniSystem.exportReportAs(format);
+            }
+        });
+    });
+}
+
+// Update the loadReports method to call initialization
+loadReports() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <!-- Previous HTML content remains the same -->
+    `;
+
+    // Add event listener for date range selection
+    document.getElementById('reportDateRange').addEventListener('change', function() {
+        const customRange = document.getElementById('customDateRange');
+        customRange.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+    
+    // Initialize the reports feature
+    this.initializeReportsFeature();
+}
 
 
 // Utility method to show notifications (if not already defined)
