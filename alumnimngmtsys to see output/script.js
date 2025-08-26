@@ -7243,21 +7243,115 @@ generateReportsDashboard() {
     `;
 }
 
-// Initialize charts (placeholder for chart library integration)
 initializeCharts() {
-    // This would integrate with Chart.js or similar library
-    // For now, we'll show placeholder text in chart containers
-    const chartContainers = document.querySelectorAll('.chart-container canvas');
-    chartContainers.forEach(canvas => {
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#f1f5f9';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#64748b';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Chart will be rendered here', canvas.width/2, canvas.height/2);
-    });
+    // Monthly Donations Chart
+    const monthlyDonationsCtx = document.getElementById('monthlyDonationsChart');
+    if (monthlyDonationsCtx) {
+        new Chart(monthlyDonationsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Monthly Donations',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000],
+                    borderColor: 'rgb(74, 108, 247)',
+                    backgroundColor: 'rgba(74, 108, 247, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Donation Sources Chart
+    const donationSourcesCtx = document.getElementById('donationSourcesChart');
+    if (donationSourcesCtx) {
+        new Chart(donationSourcesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Online', 'Events', 'Direct Mail', 'Phone', 'Other'],
+                datasets: [{
+                    data: [45, 25, 15, 10, 5],
+                    backgroundColor: [
+                        '#4a6cf7',
+                        '#10b981',
+                        '#f59e0b',
+                        '#ef4444',
+                        '#8b5cf6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    // Campaign Performance Chart
+    const campaignPerformanceCtx = document.getElementById('campaignPerformanceChart');
+    if (campaignPerformanceCtx) {
+        new Chart(campaignPerformanceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Scholarship Fund', 'Library Construction', 'Research Grant', 'Emergency Relief'],
+                datasets: [{
+                    label: 'Goal',
+                    data: [100000, 500000, 250000, 50000],
+                    backgroundColor: 'rgba(74, 108, 247, 0.3)',
+                    borderColor: 'rgb(74, 108, 247)',
+                    borderWidth: 1
+                }, {
+                    label: 'Raised',
+                    data: [75500, 320000, 180000, 52000],
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    borderColor: 'rgb(16, 185, 129)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value / 1000) + 'K';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Add more charts as needed...
 }
+
 
 // Utility method to show notifications (if not already defined)
 showNotification(message, type = 'info') {
